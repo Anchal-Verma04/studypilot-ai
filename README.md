@@ -1,137 +1,171 @@
-# StudyPilot AI 🚀
+# 📚 StudyPilot AI
 
-StudyPilot AI is a secure, full-stack multi-agent study dashboard designed to transform raw, untrusted study materials into interactive quizzes, tutor assessments, and progress histories. It is built using an **Agent Development Kit (ADK) Multi-Agent** framework and is fully integrated with a **Model Context Protocol (MCP)** server architecture.
+**A secure, full-stack multi-agent study assistant** — paste your notes, get a quiz, get graded, and track your progress over time. Built for the **Google × Kaggle AI Agents: Intensive Vibe Coding Capstone Project** (Freestyle Track).
+
+![Status](https://img.shields.io/badge/status-working-brightgreen)
+![Mode](https://img.shields.io/badge/mode-offline%20simulation-blue)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ---
 
-## 🌟 Key Architecture & Concept Mapping
+## 🎯 What It Does
 
-The application showcases **four core concepts**:
+StudyPilot AI turns raw study notes into a full learning loop:
 
-### 1. ADK Multi-Agent System
-StudyPilot AI organizes processing into specialized, cooperative agent instances extending from a standard [BaseAgent](file:///c:/Users/KIIT/Desktop/Capstone/src/agents/base_agent.py):
-*   **Notes Extractor Agent** ([notes_extractor_agent.py](file:///c:/Users/KIIT/Desktop/Capstone/src/agents/notes_extractor_agent.py)): Sanitizes user materials and extracts key terminology definitions.
-*   **Quiz Generator Agent** ([quiz_generator_agent.py](file:///c:/Users/KIIT/Desktop/Capstone/src/agents/quiz_generator_agent.py)): Dynamically builds distractors and formulates multiple-choice quizzes.
-*   **Grader/Feedback Agent** ([grader_agent.py](file:///c:/Users/KIIT/Desktop/Capstone/src/agents/grader_agent.py)): Scores student answers and writes contextual explanations for incorrect choices.
-*   **Progress Tracker Agent** ([progress_tracker_agent.py](file:///c:/Users/KIIT/Desktop/Capstone/src/agents/progress_tracker_agent.py)): Manages user score histories, builds progress coordinates, and analyzes learning trends.
+1. **Paste or upload your notes** in the Study Lab
+2. An **agent pipeline** sanitizes the input, extracts key facts, and generates a quiz
+3. **Take the quiz** — questions are built directly from real sentences in your notes
+4. **Get graded instantly**, with explanations that quote your original notes back to you
+5. **Track your progress** over time on the Dashboard, with full history of every attempt
 
-### 2. Model Context Protocol (MCP) Server
-An independent executable [mcp_server.py](file:///c:/Users/KIIT/Desktop/Capstone/src/mcp_server.py) implements the Model Context Protocol over a JSON-RPC stdio pipe. It registers the multi-agent system actions as tools:
-*   `extract_notes`: Executes extraction and logs notes.
-*   `generate_quiz`: Constructs quizzes on selected notes.
-*   `grade_answers`: Evaluates student submissions.
-*   `get_analytics`: Returns dashboard progress trends.
+Runs **completely offline** in high-fidelity Simulation Mode — no API key required. Optionally connect a free Gemini API key for live LLM-powered generation.
 
-This allows external LLM clients (such as Claude Desktop, Cline, or Antigravity) to call the agents directly.
+---
 
-### 3. Deep Sandbox Security Features
-StudyPilot AI treats pasted user text as untrusted. Safe execution is enforced in [safety_filter.py](file:///c:/Users/KIIT/Desktop/Capstone/src/skills/safety_filter.py):
-*   **Prompt Injection Blockers**: Heuristic regex checks scan for behavioral overrides (e.g. *"ignore instructions"*).
-*   **XSS Protection**: Complete escaping of HTML tags and script elements prevents script-injection hazards.
-*   **Size Validation**: Restricts input to `50,000` characters to prevent buffer issues or cost exhaustion.
+## 🖼️ Screenshots
 
-### 4. Agent Skills
-Modular utility libraries represent distinct agent skills:
-*   **Safety validation**: [safety_filter.py](file:///c:/Users/KIIT/Desktop/Capstone/src/skills/safety_filter.py)
-*   **JSON database store**: [db_store.py](file:///c:/Users/KIIT/Desktop/Capstone/src/skills/db_store.py) (maintains records in a local `db.json` database file).
+> *(Add your dashboard, quiz, and feedback screenshots here)*
+
+| Dashboard | Quiz Session | Feedback Hub |
+|---|---|---|
+| ![Dashboard](docs/screenshot-dashboard.png) | ![Quiz](docs/screenshot-quiz.png) | ![Feedback](docs/screenshot-feedback.png) |
+
+---
+
+## 🧠 Multi-Agent Architecture
+
+StudyPilot AI is built on an **ADK-style multi-agent system**, where each agent has a single clear responsibility and hands off to the next:
+
+```
+ User Notes
+     │
+     ▼
+┌─────────────────────┐
+│  Notes Extractor     │  → validates, sanitizes, extracts key terms & facts
+│  Agent               │
+└─────────┬────────────┘
+          ▼
+┌─────────────────────┐
+│  Quiz Generator      │  → builds fact-based questions from real note content
+│  Agent               │
+└─────────┬────────────┘
+          ▼
+┌─────────────────────┐
+│  Grader / Feedback   │  → scores answers, explains mistakes using source text
+│  Agent               │
+└─────────┬────────────┘
+          ▼
+┌─────────────────────┐
+│  Progress Tracker    │  → logs attempts, tracks trends, flags weak topics
+│  Agent               │
+└─────────────────────┘
+```
+
+### Key Concepts Demonstrated
+
+| Concept | Implementation |
+|---|---|
+| **Multi-Agent System (ADK)** | `BaseAgent` class + 4 specialized sub-agents coordinating in a pipeline |
+| **MCP Server** | `mcp_server.py` exposes agent capabilities (`extract_notes`, `generate_quiz`, `grade_answers`) as MCP tools over JSON-RPC |
+| **Security Features** | `safety_filter.py` — input size validation, prompt-injection heuristics, HTML/script sanitization before any content reaches an agent |
+| **Agent Skills** | Reusable skill modules (`safety_filter`, `db_store`) declared and used across agents |
+| **Deployability** | Single-command local deployment via Flask, `localhost:3000` |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend:** Python, Flask
+- **Frontend:** HTML, CSS, vanilla JS, Chart.js
+- **Data Storage:** Lightweight JSON file store (`db.json`)
+- **AI Integration:** Optional Google Gemini API (`google-genai`), with full offline simulation fallback
+- **Protocol:** Model Context Protocol (MCP) server for agent tool exposure
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.9+
+- pip
+
+### Installation
+
+```bash
+git clone https://github.com/Anchal-Verma04/studypilot-ai.git
+cd studypilot-ai
+pip install -r requirements.txt
+```
+
+### Run the app
+
+```bash
+python src/server.py
+```
+
+Then open your browser at:
+
+```
+http://localhost:3000
+```
+
+That's it — no API key needed. The app runs fully offline in **Simulation Mode**.
+
+### (Optional) Enable live Gemini AI
+
+1. Get a free API key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+2. Copy `.env.example` to `.env`
+3. Add your key:
+   ```
+   GEMINI_API_KEY=your_key_here
+   ```
+4. Restart the server
 
 ---
 
 ## 📂 Project Structure
 
 ```
-Capstone/
-├── db.json                       # Local JSON database (Auto-generated)
-├── requirements.txt              # Backend python dependencies
-├── README.md                     # Documentation
-├── .env.example                  # Environment configuration template
-└── src/
-    ├── server.py                 # Core Flask backend server
-    ├── mcp_server.py             # Stdio MCP tool server wrapper
-    ├── test_agents.py            # Automated integration test script
-    ├── agents/
-    │   ├── base_agent.py         # ADK abstract agent base
-    │   ├── notes_extractor_agent.py
-    │   ├── quiz_generator_agent.py
-    │   ├── grader_agent.py
-    │   └── progress_tracker_agent.py
-    ├── skills/
-    │   ├── safety_filter.py      # Sanitization skill
-    │   └── db_store.py           # Database storage skill
-    └── public/                   # Premium UI dashboard assets
-        ├── index.html            # Web markup structure
-        ├── styles.css            # Custom CSS styling (dark glassmorphism)
-        └── app.js                # Core frontend client scripting
+studypilot-ai/
+├── src/
+│   ├── agents/
+│   │   ├── base_agent.py
+│   │   ├── notes_extractor_agent.py
+│   │   ├── quiz_generator_agent.py
+│   │   ├── grader_agent.py
+│   │   └── progress_tracker_agent.py
+│   ├── skills/
+│   │   ├── safety_filter.py
+│   │   └── db_store.py
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── styles.css
+│   │   └── app.js
+│   ├── mcp_server.py
+│   ├── server.py
+│   └── test_agents.py
+├── db.json
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
 ---
 
-## 🛠️ Installation & Setup
+## 🔒 Security Notes
 
-Ensure you have **Python 3.10+** installed on your system.
-
-### 1. Clone & Navigate
-Navigate to the project root folder:
-```bash
-cd c:\Users\KIIT\Desktop\Capstone
-```
-
-### 2. Install Dependencies
-Install Python requirements:
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configure Gemini Key (Optional)
-By default, the application runs immediately using a high-fidelity mock simulator (ideal for offline testing). To enable live AI integration with Google Gemini:
-1.  Copy `.env.example` to `.env`:
-    ```bash
-    copy .env.example .env
-    ```
-2.  Open `.env` and add your Google Gemini API key:
-    ```env
-    GEMINI_API_KEY=AIzaSy...
-    ```
+- All user-submitted notes pass through **size validation** and **prompt-injection heuristics** before reaching any agent
+- Content is **HTML-sanitized** to prevent script injection in the UI
+- No credentials are hardcoded — API keys are loaded from a local `.env` file (never committed to version control)
 
 ---
 
-## 🚀 Running the Application
+## 🏆 About This Project
 
-### Start the Web Application
-Launch the Flask server:
-```bash
-python src/server.py
-```
-*   The dashboard UI will be hosted at: **[http://localhost:3000](http://localhost:3000)**
-*   API endpoints will be exposed at: `http://localhost:3000/api/*`
-
-### Run Automated Tests
-Run backend integration and safety test scripts:
-```bash
-python src/test_agents.py
-```
-
-### Running as an MCP Server
-The MCP server communicates using JSON-RPC over `stdio`. You can integrate it directly with **Claude Desktop** by editing your `claude_desktop_config.json` configuration file:
-
-```json
-{
-  "mcpServers": {
-    "studypilot-ai": {
-      "command": "python",
-      "args": ["c:/Users/KIIT/Desktop/Capstone/src/mcp_server.py"]
-    }
-  }
-}
-```
+Built as the capstone project for Google & Kaggle's **5-Day AI Agents: Intensive Vibe Coding Course** (Freestyle Track), demonstrating multi-agent orchestration, MCP server design, agent skills, and security-conscious agent architecture — developed using **Antigravity IDE**.
 
 ---
 
-## 🔄 End-to-End User Journey
+## 📄 License
 
-1.  **Dashboard Overview**: View statistics for total quizzes taken and your average grade percentage.
-2.  **Add Study Notes**: Paste study notes or textbook content in the **Study Lab**.
-3.  **Safety Screening**: The **Safety Sandbox Monitor** scans your text. If a script or prompt injection attempt is detected, execution is halted. If safe, topics and terms are extracted.
-4.  **Take Quiz**: Click **Generate Quiz** to compile 4 custom multiple-choice questions. Complete the quiz and submit.
-5.  **Grading & Tutor Advice**: The **Feedback Hub** presents your graded scorecard, highlights correct vs wrong responses, and displays tutoring recommendations.
-6.  **Progress Trend**: Review your updated score history chart on the dashboard!
+MIT License — free to use, modify, and learn from.
