@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyPilot AI - Multi-Agent Study Assistant</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script href="https://cdn.jsdelivr.net/npm/chart.js" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Styleheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-plane-departure"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>StudyPilot <span class="accent-text">AI</span></h1>
+                    <span class="sub-brand">Multi-Agent System</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-target="dashboard-tab" id="nav-dashboard">
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </button>
+                <button class="nav-btn" data-target="studylab-tab" id="nav-studylab">
+                    <i class="fa-solid fa-book-open"></i> Study Lab
+                </button>
+                <button class="nav-btn" data-target="quiz-tab" id="nav-quiz" disabled>
+                    <i class="fa-solid fa-circle-question"></i> Quiz Session
+                </button>
+                <button class="nav-btn" data-target="feedback-tab" id="nav-feedback" disabled>
+                    <i class="fa-solid fa-square-poll-vertical"></i> Feedback Hub
+                </button>
+            </nav>
+
+            <div class="agent-network-status">
+                <h3>Agent Network Status</h3>
+                <div class="agent-node">
+                    <span class="node-indicator online"></span>
+                    <span class="node-name">Notes Extractor</span>
+                </div>
+                <div class="agent-node">
+                    <span class="node-indicator online"></span>
+                    <span class="node-name">Quiz Generator</span>
+                </div>
+                <div class="agent-node">
+                    <span class="node-indicator online"></span>
+                    <span class="node-name">Grader / Feedback</span>
+                </div>
+                <div class="agent-node">
+                    <span class="node-indicator online"></span>
+                    <span class="node-name">Progress Tracker</span>
+                </div>
+            </div>
+            
+            <div class="server-badge">
+                <i class="fa-solid fa-server"></i>
+                <div class="server-badge-text">
+                    <span class="status-lbl">Backend Server</span>
+                    <span id="backend-status" class="status-val">Checking...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-title">
+                    <h2 id="tab-title">Student Dashboard</h2>
+                    <p id="tab-subtitle">Track your multi-agent educational progress and score statistics.</p>
+                </div>
+                <div class="system-mode-badge" id="system-mode">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>Simulation Mode</span>
+                </div>
+            </header>
+
+            <!-- TAB 1: Dashboard -->
+            <section id="dashboard-tab" class="tab-content active">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="card-icon blue"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <div class="card-info">
+                            <span class="card-label">Quizzes Completed</span>
+                            <h3 id="stat-attempts">0</h3>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="card-icon purple"><i class="fa-solid fa-bullseye"></i></div>
+                        <div class="card-info">
+                            <span class="card-label">Average Score</span>
+                            <h3 id="stat-avg-score">0%</h3>
+                        </div>
+                    </div>
+                    <div class="metric-card span-2">
+                        <div class="card-icon cyan"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        <div class="card-info">
+                            <span class="card-label">Learning Velocity & Trend</span>
+                            <p id="stat-trend" class="trend-text">No quiz attempts logged yet. Head over to the Study Lab to begin!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-layouts">
+                    <!-- Chart card -->
+                    <div class="layout-card chart-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-line"></i> Score Performance Trend</h3>
+                        </div>
+                        <div class="card-body chart-wrapper">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Side card: Strengths and Areas of focus -->
+                    <div class="layout-card diagnostics-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-brain"></i> Agent Topic Assessment</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="diag-group">
+                                <h4><i class="fa-solid fa-circle-check text-success"></i> Mastered Strengths</h4>
+                                <ul id="list-strengths" class="diag-list">
+                                    <li class="empty-list-msg">No mastered topics yet.</li>
+                                </ul>
+                            </div>
+                            <div class="diag-group mt-4">
+                                <h4><i class="fa-solid fa-circle-exclamation text-warning"></i> Review Focus Areas</h4>
+                                <ul id="list-focus-areas" class="diag-list">
+                                    <li class="empty-list-msg">No review subjects yet.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History list -->
+                <div class="layout-card mt-4">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-history"></i> Quiz History & Detailed Logs</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Study Materials</th>
+                                        <th>Topics Covered</th>
+                                        <th>Score Achieved</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <tr>
+                                        <td colspan="5" class="empty-table-msg">No previous quiz history found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Study Lab -->
+            <section id="studylab-tab" class="tab-content">
+                <div class="study-lab-layout">
+                    <div class="notes-input-area">
+                        <div class="layout-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-file-pen"></i> Feed Untrusted Study Materials</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="notes-title">Document Title</label>
+                                    <input type="text" id="notes-title" placeholder="e.g. World War II History, Photosynthesis, Javascript Enums">
+                                </div>
+                                <div class="form-group">
+                                    <label for="notes-content">Paste Raw Study Notes or Copy-Pasted Text</label>
+                                    <textarea id="notes-content" rows="12" placeholder="Paste notes here... The safety agent will scan it for code injection or command hijacks."></textarea>
+                                </div>
+                                <div class="form-group button-group">
+                                    <button class="btn btn-primary" id="btn-extract-notes">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Process Notes with Extractor
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extraction results & safety checks -->
+                    <div class="extraction-results-area">
+                        <div class="layout-card security-card" id="security-monitor">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-shield-halved"></i> Safety Sandbox Monitor</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="security-status-item">
+                                    <span class="sec-label">Input Size Check:</span>
+                                    <span id="sec-size-check" class="sec-badge inactive"><i class="fa-solid fa-minus"></i> Unverified</span>
+                                </div>
+                                <div class="security-status-item">
+                                    <span class="sec-label">Injection Threat Check:</span>
+                                    <span id="sec-injection-check" class="sec-badge inactive"><i class="fa-solid fa-minus"></i> Unverified</span>
+                                </div>
+                                <div class="security-status-item">
+                                    <span class="sec-label">HTML XSS Sanitization:</span>
+                                    <span id="sec-xss-check" class="sec-badge inactive"><i class="fa-solid fa-minus"></i> Unverified</span>
+                                </div>
+                                <div class="security-log-box" id="security-log-desc">
+                                    Ready. Safety Agent is listening for note uploads.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layout-card extraction-details-card mt-4 hide" id="extraction-result-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-square-check"></i> Extracted Structures</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="extracted-meta">
+                                    <h4 class="meta-section-title">Synthesized Summary:</h4>
+                                    <p id="extracted-summary"></p>
+                                </div>
+                                <div class="extracted-meta mt-4">
+                                    <h4 class="meta-section-title">Topics Identified:</h4>
+                                    <div id="extracted-topics-tags" class="tags-container"></div>
+                                </div>
+                                <div class="extracted-meta mt-4">
+                                    <h4 class="meta-section-title">Key Terminology:</h4>
+                                    <div id="extracted-terms-list" class="terms-details-container"></div>
+                                </div>
+                                <div class="cta-quiz-wrapper mt-4">
+                                    <button class="btn btn-secondary w-full" id="btn-goto-quiz">
+                                        <i class="fa-solid fa-circle-question"></i> Generate Quiz from these Notes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: Quiz Session -->
+            <section id="quiz-tab" class="tab-content">
+                <div class="quiz-session-layout">
+                    <div class="layout-card quiz-card">
+                        <div class="card-header quiz-progress-header">
+                            <h3 id="quiz-notes-title"><i class="fa-solid fa-circle-question"></i> Quiz</h3>
+                            <span class="badge" id="quiz-progress-text">Question 1 of 4</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="quiz-progress-bar" style="width: 25%;"></div>
+                            </div>
+
+                            <div class="quiz-questions-viewport" id="quiz-container">
+                                <!-- Loaded dynamically via app.js -->
+                            </div>
+
+                            <div class="quiz-navigation-bar mt-4">
+                                <button class="btn btn-muted" id="btn-quiz-prev" disabled><i class="fa-solid fa-arrow-left"></i> Previous</button>
+                                <button class="btn btn-secondary" id="btn-quiz-next">Next <i class="fa-solid fa-arrow-right"></i></button>
+                                <button class="btn btn-primary hide" id="btn-quiz-submit"><i class="fa-solid fa-check-double"></i> Submit Exam Answers</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: Feedback Hub -->
+            <section id="feedback-tab" class="tab-content">
+                <div class="feedback-hub-layout">
+                    <div class="feedback-metrics-card">
+                        <div class="layout-card">
+                            <div class="card-body text-center">
+                                <div class="grade-badge" id="feedback-percentage">0%</div>
+                                <h3 id="feedback-score-text">Score: 0 / 0</h3>
+                                <p id="feedback-general-msg" class="feedback-quote"></p>
+                            </div>
+                        </div>
+
+                        <div class="layout-card mt-4">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-compass"></i> Recommendations for Next Steps</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul id="feedback-recommendations" class="recommendation-list">
+                                    <!-- Dynamic -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feedback-details-card">
+                        <div class="layout-card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-circle-info"></i> Question Explanations & Tutor Insights</h3>
+                            </div>
+                            <div class="card-body" id="feedback-explanations-container">
+                                <!-- Dynamic -->
+                            </div>
+                            <div class="card-footer mt-4">
+                                <button class="btn btn-primary w-full" id="btn-restart-study">
+                                    <i class="fa-solid fa-rotate-left"></i> Return to Study Lab
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="attempt-detail-modal" class="modal-overlay hide" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modal-title"><i class="fa-solid fa-clock-rotate-left"></i> Attempt Review</h2>
+                <button class="modal-close-btn" id="btn-close-modal" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <!-- Meta bar -->
+                <div class="modal-meta-bar">
+                    <span class="modal-meta-item"><i class="fa-solid fa-book"></i> <strong id="modal-note-title"></strong></span>
+                    <span class="modal-meta-item"><i class="fa-solid fa-calendar"></i> <span id="modal-date"></span></span>
+                    <span class="modal-meta-item"><i class="fa-solid fa-bullseye"></i> Score: <strong id="modal-score"></strong></span>
+                    <span class="modal-grade-badge" id="modal-grade-pct"></span>
+                </div>
+
+                <!-- Original notes excerpt -->
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><i class="fa-solid fa-file-lines"></i> Original Study Notes</h3>
+                    <pre id="modal-notes-content" class="modal-notes-pre"></pre>
+                </div>
+
+                <!-- Feedback summary -->
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><i class="fa-solid fa-comment-dots"></i> Grader's Overall Feedback</h3>
+                    <p id="modal-overall-feedback" class="modal-feedback-text"></p>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="modal-section" id="modal-recs-section">
+                    <h3 class="modal-section-title"><i class="fa-solid fa-compass"></i> Recommendations</h3>
+                    <ul id="modal-recommendations" class="recommendation-list"></ul>
+                </div>
+
+                <!-- Question breakdown -->
+                <div class="modal-section">
+                    <h3 class="modal-section-title"><i class="fa-solid fa-list-check"></i> Question-by-Question Breakdown</h3>
+                    <div id="modal-questions-breakdown"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
